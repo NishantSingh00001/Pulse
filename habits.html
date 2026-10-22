@@ -1,0 +1,114 @@
+<!doctype html><html lang="en" data-theme="dark"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Pulse — Habits</title>
+<meta name="description" content="Create, edit and manage your habits: build or quit, quantity goals, schedules, tags, reminders, notes and history.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="pulse.css">
+</head><body>
+<div id="topbar"></div>
+<main class="shell"><div class="page">
+  <section class="phead">
+    <div class="eyebrow">your habits</div>
+    <h1>Design your <em>days</em>.</h1>
+    <p class="lede">Build good habits, quit the ones you don't want, set quantity goals and schedules. Tap a habit's menu for its full history.</p>
+  </section>
+
+  <div class="toolbar">
+    <div class="search"><span id="searchIc"></span><input id="search" placeholder="Search habits or tags…"></div>
+    <select class="sel" id="sort"><option value="order">Manual order</option><option value="streak">By streak</option><option value="rate">By completion</option><option value="name">A–Z</option></select>
+    <select class="sel" id="filter"><option value="active">Active</option><option value="all">All</option><option value="archived">Archived</option></select>
+    <button class="pill primary" id="newBtn" data-press></button>
+  </div>
+
+  <div class="habits" id="list"></div>
+  <div class="foot">Tap a habit to check it · menu for details, edit, rest-day, archive or delete.</div>
+</div></main>
+
+<div class="menupop hidden" id="cardmenu"></div>
+
+<div class="scrim" id="editScrim"><div class="modal">
+  <h3><span id="editTitle">New habit</span><button class="close" data-press onclick="closeAll()"></button></h3>
+  <div class="fld"><label>Name</label><input type="text" id="eName" placeholder="Drink water, read, meditate…"></div>
+  <div class="fld"><label>Icon</label><div class="iconpick" id="eIcon"></div></div>
+  <div class="fld"><label>Color</label><div class="colrow" id="eColor"></div></div>
+  <div class="fld"><label>Type</label><div class="segc" id="eType"><button data-v="build" class="on">Build</button><button data-v="quit">Quit</button></div></div>
+  <div class="fld" id="quantWrap"><label>Daily goal (optional)</label><div style="display:flex;gap:10px"><input type="number" id="eTarget" min="0" placeholder="e.g. 8" style="flex:1"><input type="text" id="eUnit" placeholder="unit — glasses, min, pages" style="flex:2"></div></div>
+  <div class="fld"><label>Schedule</label><div class="segc" id="eFreq"><button data-v="daily" class="on">Every day</button><button data-v="week">X / week</button><button data-v="days">Pick days</button></div>
+    <div id="freqWeek" class="hidden" style="margin-top:10px;display:flex;gap:10px;align-items:center"><input type="number" id="eTimes" min="1" max="7" value="3" style="width:80px"><span style="color:var(--mut);font-weight:600">times per week</span></div>
+    <div id="freqDays" class="hidden daysrow" style="margin-top:10px"></div></div>
+  <div class="fld"><label>Tags (comma separated)</label><input type="text" id="eTags" placeholder="health, morning"></div>
+  <div class="fld"><label>Reminder (optional)</label><input type="time" id="eRemind"></div>
+  <div class="fld"><label>Notes</label><textarea id="eNotes" rows="2" placeholder="Why does this matter to you?"></textarea></div>
+  <button class="save" data-press id="saveBtn">Save habit</button>
+  <button class="danger hidden" id="delBtn" data-press>Delete this habit</button>
+</div></div>
+
+<div class="scrim" id="detailScrim"><div class="modal"><h3><span id="dTitle">Habit</span><button class="close" data-press onclick="closeAll()"></button></h3><div id="detailBody"></div></div></div>
+
+<script src="pulse.js"></script>
+<script>
+let EDIT={icon:'water',color:PALETTE[0],type:'build',freq:'daily',days:[1,2,3,4,5],id:null};
+function visible(){let hs=S.habits.slice();const f=$('filter').value;hs=hs.filter(h=>f==='all'?true:f==='archived'?h.archived:!h.archived);
+  const q=$('search').value.trim().toLowerCase();if(q)hs=hs.filter(h=>h.name.toLowerCase().includes(q)||(h.tags||[]).some(t=>t.toLowerCase().includes(q)));
+  const s=$('sort').value;if(s==='streak')hs.sort((a,b)=>streak(b)-streak(a));else if(s==='rate')hs.sort((a,b)=>rate(b,30)-rate(a,30));else if(s==='name')hs.sort((a,b)=>a.name.localeCompare(b.name));else hs.sort((a,b)=>(a.order||0)-(b.order||0));return hs;}
+function render(anim){const el=$('list');const hs=visible();
+  if(!S.habits.length){el.innerHTML='<div class="empty">No habits yet. Tap <b>New habit</b> and start tiny.</div>';return;}
+  if(!hs.length){el.innerHTML='<div class="empty">Nothing matches that filter.</div>';return;}
+  el.innerHTML='';hs.forEach(h=>el.appendChild(habitCard(h,{heat:true,anim})));}
+window.onData=render;
+window.openCardMenu=function(e,id){e.stopPropagation();const h=S.habits.find(x=>x.id===id);const m=document.createElement('div');m.className='menupop';
+  m.innerHTML='<button data-press id="m-det">'+icon('insights',16)+' Details & history</button><button data-press id="m-edit">'+icon('edit',16)+' Edit</button><button data-press id="m-dup">'+icon('dup',16)+' Duplicate</button><button data-press id="m-skip">'+icon('moon',16)+' Rest day (today)</button><button data-press id="m-arch">'+icon('archive',16)+' '+(h.archived?'Unarchive':'Archive')+'</button><button class="del" data-press id="m-del">'+icon('trash',16)+' Delete</button>';
+  document.body.appendChild(m);const r=e.target.getBoundingClientRect();m.style.top=Math.min(r.bottom+6,innerHeight-280)+'px';m.style.left=Math.min(r.left-160,innerWidth-220)+'px';
+  m.querySelector('#m-det').onclick=()=>{openDetail(id);closeAll();};
+  m.querySelector('#m-edit').onclick=()=>{openEdit(id);closeAll();};
+  m.querySelector('#m-dup').onclick=()=>{const c=JSON.parse(JSON.stringify(h));c.id=uid();c.name=h.name+' copy';c.log={};c.order=(Math.max(0,...S.habits.map(x=>x.order||0))+1);S.habits.push(c);save();render();closeAll();toast('Duplicated');};
+  m.querySelector('#m-skip').onclick=()=>{setSkip(id,dk(0));closeAll();};
+  m.querySelector('#m-arch').onclick=()=>{h.archived=!h.archived;save();render();closeAll();toast(h.archived?'Archived':'Unarchived');};
+  m.querySelector('#m-del').onclick=()=>{if(confirm('Delete this habit and its history?')){S.habits=S.habits.filter(x=>x.id!==id);save();render();closeAll();toast('Deleted');}};
+};
+addEventListener('click',e=>{if(!e.target.closest('.menu')&&!e.target.closest('.menupop'))document.querySelectorAll('.menupop').forEach(m=>m.remove());});
+/* edit modal */
+function wireSeg(segId,field){document.querySelectorAll('#'+segId+' button').forEach(b=>b.onclick=()=>{EDIT[field]=b.dataset.v;document.querySelectorAll('#'+segId+' button').forEach(x=>x.classList.remove('on'));b.classList.add('on');syncEdit();});}
+function openEdit(id){closeAll();
+  $('eIcon').innerHTML=HABITICON_KEYS.map(k=>'<button class="ip" data-k="'+k+'" data-press>'+icon(k,20)+'</button>').join('');
+  $('eIcon').querySelectorAll('.ip').forEach(b=>b.onclick=()=>{EDIT.icon=b.dataset.k;syncEdit();});
+  $('eColor').innerHTML=PALETTE.map(c=>'<button class="cc" data-c="'+c+'" data-press style="background:'+c+'"></button>').join('');
+  $('eColor').querySelectorAll('.cc').forEach(b=>b.onclick=()=>{EDIT.color=b.dataset.c;syncEdit();});
+  $('freqDays').innerHTML=['S','M','T','W','T','F','S'].map((d,i)=>'<button class="dd" data-i="'+i+'" data-press>'+d+'</button>').join('');
+  $('freqDays').querySelectorAll('.dd').forEach(b=>b.onclick=()=>{const i=+b.dataset.i;const idx=EDIT.days.indexOf(i);if(idx>=0)EDIT.days.splice(idx,1);else EDIT.days.push(i);b.classList.toggle('on');});
+  wireSeg('eType','type');wireSeg('eFreq','freq');
+  if(id){const h=S.habits.find(x=>x.id===id);EDIT={icon:h.icon||'target',color:h.color,type:h.type,freq:h.freq.mode,days:(h.freq.days||[1,2,3,4,5]).slice(),id};
+    $('editTitle').textContent='Edit habit';$('eName').value=h.name;$('eTarget').value=h.target||'';$('eUnit').value=h.unit||'';$('eTimes').value=h.freq.times||3;$('eTags').value=(h.tags||[]).join(', ');$('eRemind').value=h.reminder||'';$('eNotes').value=h.notes||'';$('delBtn').classList.remove('hidden');$('delBtn').onclick=()=>{if(confirm('Delete this habit?')){S.habits=S.habits.filter(x=>x.id!==id);save();render();closeAll();toast('Deleted');}};}
+  else{EDIT={icon:'water',color:PALETTE[0],type:'build',freq:'daily',days:[1,2,3,4,5],id:null};$('editTitle').textContent='New habit';['eName','eTarget','eUnit','eTags','eRemind','eNotes'].forEach(x=>$(x).value='');$('eTimes').value=3;$('delBtn').classList.add('hidden');}
+  syncEdit();$('editScrim').classList.add('on');setTimeout(()=>$('eName').focus(),80);}
+function syncEdit(){document.querySelectorAll('#eIcon .ip').forEach(x=>x.classList.toggle('on',x.dataset.k===EDIT.icon));document.querySelectorAll('#eColor .cc').forEach(x=>x.classList.toggle('on',x.dataset.c===EDIT.color));document.querySelectorAll('#eType button').forEach(x=>x.classList.toggle('on',x.dataset.v===EDIT.type));document.querySelectorAll('#eFreq button').forEach(x=>x.classList.toggle('on',x.dataset.v===EDIT.freq));document.querySelectorAll('#freqDays .dd').forEach(x=>x.classList.toggle('on',EDIT.days.includes(+x.dataset.i)));$('freqWeek').classList.toggle('hidden',EDIT.freq!=='week');$('freqDays').classList.toggle('hidden',EDIT.freq!=='days');$('quantWrap').classList.toggle('hidden',EDIT.type==='quit');}
+function saveHabit(){const name=$('eName').value.trim();if(!name){toast('Give it a name');return;}const tags=$('eTags').value.split(',').map(t=>t.trim()).filter(Boolean);
+  const data={icon:EDIT.icon,color:EDIT.color,type:EDIT.type,target:EDIT.type==='quit'?0:(+$('eTarget').value||0),unit:$('eUnit').value.trim(),freq:{mode:EDIT.freq,times:+$('eTimes').value||3,days:EDIT.days.slice()},tags,reminder:$('eRemind').value,notes:$('eNotes').value.trim(),name};
+  if(EDIT.id){Object.assign(S.habits.find(x=>x.id===EDIT.id),data);toast('Habit updated');}else{S.habits.push({id:uid(),created:new Date().toISOString(),log:{},archived:false,order:(Math.max(0,...S.habits.map(x=>x.order||0))+1),...data});toast('Habit added · you got this');}
+  save();closeAll();render();}
+function openDetail(id){closeAll();const h=S.habits.find(x=>x.id===id);$('dTitle').textContent=h.name;
+  const wk=[0,0,0,0,0,0,0,0];for(let w=0;w<8;w++)for(let dd=0;dd<7;dd++){const k=dk(w*7+dd);if(isDone(h,k))wk[7-w]++;}const wkMax=Math.max(1,...wk);
+  const notes=Object.keys(h.log).filter(k=>entry(h,k)&&entry(h,k).note).sort().reverse().slice(0,6);
+  $('detailBody').innerHTML='<div class="dstats"><div class="dstat"><div class="n" style="color:var(--am)">'+streak(h)+'</div><div class="l">streak</div></div><div class="dstat"><div class="n">'+bestStreak(h)+'</div><div class="l">best</div></div><div class="dstat"><div class="n" style="color:var(--acc)">'+rate(h,3650)+'%</div><div class="l">all-time</div></div></div>'+
+   '<div class="fld"><label>Last 8 weeks</label><div class="wk">'+wk.map(v=>'<div class="wkb" style="height:'+(v/wkMax*100)+'%"></div>').join('')+'</div><div class="wkl">'+['8w','7w','6w','5w','4w','3w','2w','now'].map(l=>'<span>'+l+'</span>').join('')+'</div></div>'+
+   '<div class="dstats" style="grid-template-columns:1fr 1fr"><div class="dstat"><div class="n" style="font-size:17px">'+bestWeekday(h)+'</div><div class="l">best day</div></div><div class="dstat"><div class="n" style="font-size:17px">'+Object.keys(h.log).length+'</div><div class="l">days logged</div></div></div>'+
+   '<div class="fld"><label>Today\'s note & mood</label><textarea id="dNote" rows="2" placeholder="How did it go?">'+esc(entry(h,dk(0))&&entry(h,dk(0)).note||'')+'</textarea><div class="moodrow" id="moodrow"></div></div>'+
+   (notes.length?'<div class="fld"><label>Recent notes</label>'+notes.map(k=>'<div style="background:var(--panel2);border-radius:12px;padding:10px 12px;margin-bottom:6px"><b style="color:var(--mut);font-family:var(--mono);font-size:11px">'+k+'</b><div style="margin-top:3px">'+esc(entry(h,k).note)+'</div></div>').join('')+'</div>':'')+
+   '<button class="save" data-press id="noteSave">Save note</button>';
+  const cur=entry(h,dk(0))&&entry(h,dk(0)).mood;
+  $('moodrow').innerHTML=['sleep','close','target','heart','star'].map((m,i)=>'<span class="mood'+(cur===i+1?' on':'')+'" data-m="'+(i+1)+'">'+icon(['moon','close','target','heart','star'][i],24)+'</span>').join('');
+  $('moodrow').querySelectorAll('.mood').forEach(el=>el.onclick=()=>{$('moodrow').querySelectorAll('.mood').forEach(x=>x.classList.remove('on'));el.classList.add('on');el.dataset.sel=1;});
+  $('noteSave').onclick=()=>{const k=dk(0);const e=entry(h,k)||{};e.note=$('dNote').value.trim();const sel=$('moodrow').querySelector('.mood.on');if(sel)e.mood=+sel.dataset.m;h.log[k]=e;save();render();closeAll();toast('Note saved');};
+  $('detailScrim').classList.add('on');}
+window.initPage=function(){
+  $('searchIc').innerHTML=icon('search',16);
+  $('newBtn').innerHTML=icon('plus',15)+' New habit';
+  $('newBtn').onclick=()=>openEdit();
+  $('saveBtn').onclick=saveHabit;
+  $('search').oninput=()=>render();$('sort').onchange=()=>render();$('filter').onchange=()=>render();
+  addEventListener('keydown',e=>{if(/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))return;if(e.key==='n'||e.key==='N')openEdit();});
+  render();
+};
+</script>
+</body></html>

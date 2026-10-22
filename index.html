@@ -1,0 +1,115 @@
+<!doctype html><html lang="en" data-theme="dark"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Pulse — a living habit studio</title>
+<meta name="description" content="A habit-building companion. Build and quit habits, keep streaks, earn XP, track mood — 50+ features, fully offline in your browser.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Fraunces:ital,opsz,wght@1,9..144,400..500&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="pulse.css">
+<style>
+.home{position:relative;z-index:3}
+.hero2{min-height:calc(100vh - 66px);display:flex;align-items:center;padding:20px 0 40px}
+.hero2-in{max-width:1180px;margin:0 auto;padding:0 40px;display:grid;grid-template-columns:1.05fr .95fr;gap:40px;align-items:center;width:100%}
+@media(max-width:900px){.hero2-in{grid-template-columns:1fr;gap:16px;padding:0 20px}.hero2{min-height:auto;padding:36px 0}}
+.kicker{display:inline-flex;align-items:center;gap:12px;font-family:var(--mono);font-size:11px;letter-spacing:.28em;text-transform:uppercase;color:var(--amb);margin-bottom:26px}
+.kicker::before{content:"";width:42px;height:1px;background:linear-gradient(90deg,var(--amb),transparent)}
+.hero2 h1{font-family:var(--disp);font-weight:600;font-size:clamp(50px,7.6vw,116px);line-height:.9;letter-spacing:-.04em}
+.hero2 h1 em{font-family:var(--serif);font-style:italic;font-weight:400;background:linear-gradient(100deg,var(--acc),var(--amb) 50%,var(--acc2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero2 p{margin-top:26px;max-width:430px;font-size:18px;line-height:1.6;color:var(--ink2)}
+.cta-row{margin-top:36px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.btn-xl{display:inline-flex;align-items:center;gap:12px;background:linear-gradient(120deg,var(--acc),var(--acc2));color:#fff;font-family:var(--disp);font-weight:600;font-size:16px;padding:17px 30px;border-radius:999px;box-shadow:0 20px 50px -18px var(--acc);transition:transform .3s,box-shadow .3s}
+.btn-xl:hover{transform:translateY(-2px)}
+.btn-ghost{color:var(--ink2);font-family:var(--mono);font-size:13px;letter-spacing:.04em;padding:14px 8px}
+.btn-ghost:hover{color:var(--ink)}
+.metastrip{margin-top:46px;display:flex;gap:44px;flex-wrap:wrap}
+.metastrip .m .n{font-family:var(--disp);font-weight:700;font-size:34px;line-height:1;letter-spacing:-.02em}
+.metastrip .m .n em{font-style:normal;color:var(--acc)}
+.metastrip .m .l{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--mut);margin-top:8px}
+.hero2-visual{position:relative;aspect-ratio:1/1;max-width:520px;width:100%;justify-self:end}
+@media(max-width:900px){.hero2-visual{max-width:340px;margin:0 auto;justify-self:center}}
+#rings{position:absolute;inset:0;width:100%;height:100%}
+.marquee2{border-top:1px solid var(--hair);border-bottom:1px solid var(--hair);overflow:hidden;padding:18px 0;-webkit-mask:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent)}
+.marq-track{display:flex;width:max-content;animation:marq 30s linear infinite;font-family:var(--mono);font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--mut)}
+.marq-track span{display:flex;align-items:center;gap:36px;padding-right:36px}
+.marq-track b{color:var(--acc);font-weight:500}
+@keyframes marq{to{transform:translateX(-50%)}}
+@media(prefers-reduced-motion:reduce){.marq-track{animation:none}}
+.feat2{max-width:1180px;margin:0 auto;padding:88px 40px 40px}
+@media(max-width:900px){.feat2{padding:56px 20px 20px}}
+.feat2-head{margin-bottom:40px;max-width:620px}
+.feat2-head h2{font-family:var(--disp);font-weight:600;font-size:clamp(30px,4.4vw,54px);line-height:1;letter-spacing:-.03em}
+.feat2-head p{color:var(--mut);font-size:14.5px;margin-top:14px}
+.feat2-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+@media(max-width:820px){.feat2-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:520px){.feat2-grid{grid-template-columns:1fr}}
+.fcell{position:relative;padding:28px;border-radius:var(--r2);background:var(--panel);backdrop-filter:var(--glass);border:1px solid var(--hair);min-height:200px;display:flex;flex-direction:column;overflow:hidden;transition:transform .4s cubic-bezier(.22,1,.36,1),border-color .4s}
+.fcell:hover{transform:translateY(-5px);border-color:var(--glassbrd)}
+.fcell .fi{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;color:#fff;background:linear-gradient(140deg,var(--acc),var(--acc2));margin-bottom:auto;box-shadow:0 10px 24px -10px var(--acc)}
+.fcell .fx{position:absolute;top:28px;right:28px;font-family:var(--mono);font-size:11px;color:var(--dim)}
+.fcell h3{font-family:var(--disp);font-weight:600;font-size:20px;margin-top:22px;letter-spacing:-.01em}
+.fcell p{color:var(--mut);font-size:13px;line-height:1.55;margin-top:7px}
+.fcell .go{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--acc);margin-top:14px;display:flex;align-items:center;gap:7px}
+.fcell .go .ic{transition:transform .35s}.fcell:hover .go .ic{transform:translateX(5px)}
+.cta2{max-width:1180px;margin:30px auto 0;padding:0 40px}
+.cta2-in{position:relative;overflow:hidden;border-radius:var(--r2);border:1px solid var(--hair);padding:72px 40px;text-align:center;background:var(--panel);backdrop-filter:var(--glass)}
+.cta2-in::before{content:"";position:absolute;inset:0;background:radial-gradient(80% 140% at 50% 0%,color-mix(in srgb,var(--acc) 20%,transparent),transparent 60%)}
+.cta2-in h2{position:relative;font-family:var(--disp);font-weight:600;font-size:clamp(30px,4.6vw,56px);line-height:1;letter-spacing:-.03em}
+.cta2-in h2 em{font-family:var(--serif);font-style:italic;font-weight:400;color:var(--acc)}
+.cta2-in .btn-xl{position:relative;margin-top:26px}
+.feat{padding-top:40px}
+</style>
+</head><body>
+<div id="topbar"></div>
+<main class="home">
+  <section class="hero2">
+    <div class="hero2-in">
+      <div class="hero2-copy reveal">
+        <div class="kicker">A habit companion · built for momentum</div>
+        <h1>Become who<br>you <em>keep</em><br>being.</h1>
+        <p>Tiny, reactive and a little bit alive. Pulse turns daily intentions into streaks you can feel — one tap at a time.</p>
+        <div class="cta-row"><a class="btn-xl" href="habits.html" data-mag>Build your first habit</a><a class="btn-ghost" href="today.html">or see today</a></div>
+        <div class="metastrip" id="meta"></div>
+      </div>
+      <div class="hero2-visual reveal"><canvas id="rings"></canvas></div>
+    </div>
+  </section>
+  <div class="marquee2"><div class="marq-track" id="marq"></div></div>
+  <section class="feat2">
+    <div class="feat2-head reveal"><h2>Every tool you need to keep the streak.</h2><p>Five focused spaces, one shared rhythm — all private to your browser.</p></div>
+    <div class="feat2-grid" id="fgrid"></div>
+  </section>
+  <section class="cta2"><div class="cta2-in reveal"><h2>Small steps, <em>kept</em> daily.</h2><a class="btn-xl" href="today.html" data-mag>Open today</a></div></section>
+  <div class="foot">Pulse · everything stays in your browser · nothing uploaded</div>
+  <div class="feat" id="featlist"></div>
+</main>
+<script src="pulse.js"></script>
+<script>
+window.initPage=function(){
+  const hs=activeHabits();const today=hs.filter(h=>required(h,dk(0)));const done=today.filter(h=>isDone(h,dk(0))).length;const top=hs.reduce((a,h)=>streak(h)>streak(a)?h:a,hs[0]||{});
+  $('meta').innerHTML=[['done today',done+'/'+today.length],['best streak',top&&top.name?streak(top):0],['level',level()]].map(([l,n])=>'<div class="m"><div class="n"><em>'+n+'</em></div><div class="l">'+l+'</div></div>').join('');
+  const tags=['one-tap check','quantity goals','streaks','year heatmap','XP & levels','8 achievements','mood logging','offline coach','quit habits','rest days'];
+  $('marq').innerHTML='<span>'+tags.map(t=>'<b>'+t+'</b>').join(' · ')+' · </span><span>'+tags.map(t=>'<b>'+t+'</b>').join(' · ')+' · </span>';
+  const F=[['today.html','today','Today','Your scheduled habits, day summary, XP and a smart coach.'],['habits.html','habits','Habits','Build or quit, set goals and schedules, see full history.'],['insights.html','insights','Insights','Completion rates, best weekdays and a heatmap per habit.'],['achievements.html','trophy','Achievements','Level up with XP and unlock eight milestones.'],['settings.html','settings','Settings','Theme, accent, coach key and private data controls.'],['habits.html','plus','New habit','Start tiny — add your first habit in seconds.']];
+  $('fgrid').innerHTML=F.map(([h,ic,t,d],i)=>'<a class="fcell" href="'+h+'"><div class="fi">'+icon(ic,22)+'</div><div class="fx">0'+(i+1)+'</div><h3>'+t+'</h3><p>'+d+'</p><div class="go">Open '+icon('chevron',13)+'</div></a>').join('');
+  $('featlist').textContent='50+ features — build habits · quit habits · quantity goals · custom units · daily/weekly/pick-days schedules · one-tap check · quantity stepper · progress ring · backfill · rest days · per-habit color & icon · tags · reminders · notes · current & best streak · 7/30/all-time rates · weekly goals · at-risk alerts · perfect-day detection · year heatmap · 8-week chart · best-weekday · consistency bars · XP · levels · 8 achievements · mood logging · recent notes · offline coach · Gemini coach · create/edit/duplicate/archive/delete · search/sort/filter · JSON backup/restore · CSV export · progress card · reset · multi-page · light & dark · 5 accents · custom cursor · metaball motion · scroll reveals · shortcuts · autosave · offline · responsive.';
+  initRings();
+};
+function initRings(){const cv=document.getElementById('rings');if(!cv)return;const ctx=cv.getContext('2d');let W,H,DPR=Math.min(2,devicePixelRatio||1);let mx=.5,my=.5;
+  function hx(h){h=h.replace('#','');if(h.length===3)h=h.split('').map(c=>c+c).join('');return[parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)];}
+  function sz(){const r=cv.getBoundingClientRect();W=cv.width=r.width*DPR;H=cv.height=r.height*DPR;}sz();addEventListener('resize',sz);
+  cv.addEventListener('pointermove',e=>{const r=cv.getBoundingClientRect();mx=(e.clientX-r.left)/r.width;my=(e.clientY-r.top)/r.height;});
+  const reduceM=matchMedia('(prefers-reduced-motion: reduce)').matches;let t=0;
+  function frame(){t+=reduceM?0:.012;ctx.clearRect(0,0,W,H);ctx.globalCompositeOperation='lighter';
+    const a1=hx(getComputedStyle(document.documentElement).getPropertyValue('--acc').trim()||'#ff5d73');
+    const a2=hx(getComputedStyle(document.documentElement).getPropertyValue('--acc2').trim()||'#a06bff');
+    const cx=W*(0.5+(mx-0.5)*0.08),cy=H*(0.5+(my-0.5)*0.08),maxR=Math.min(W,H)*0.46;
+    for(let i=0;i<6;i++){const phase=(t*0.4+i/6)%1;const r=phase*maxR;const alpha=(1-phase)*0.5;const f=i/6;
+      const cr=Math.round(a1[0]+(a2[0]-a1[0])*f),cg=Math.round(a1[1]+(a2[1]-a1[1])*f),cb=Math.round(a1[2]+(a2[2]-a1[2])*f);
+      ctx.strokeStyle='rgba('+cr+','+cg+','+cb+','+alpha+')';ctx.lineWidth=DPR*(2+ (1-phase)*3);ctx.beginPath();ctx.arc(cx,cy,r,0,6.29);ctx.stroke();}
+    const pulse=0.5+0.5*Math.sin(t*3);const coreR=maxR*0.14*(1+pulse*0.25);
+    const g=ctx.createRadialGradient(cx,cy,0,cx,cy,coreR*2.4);g.addColorStop(0,'rgba('+a1[0]+','+a1[1]+','+a1[2]+',0.9)');g.addColorStop(1,'rgba('+a1[0]+','+a1[1]+','+a1[2]+',0)');
+    ctx.fillStyle=g;ctx.beginPath();ctx.arc(cx,cy,coreR*2.4,0,6.29);ctx.fill();
+    ctx.globalCompositeOperation='source-over';requestAnimationFrame(frame);}
+  frame();
+}
+</script>
+</body></html>

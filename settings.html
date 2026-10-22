@@ -1,0 +1,78 @@
+<!doctype html><html lang="en" data-theme="dark"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Pulse — Settings</title>
+<meta name="description" content="Appearance, AI coach key, data backup and the full feature list.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="pulse.css">
+</head><body>
+<div id="topbar"></div>
+<main class="shell"><div class="page">
+  <section class="phead">
+    <div class="eyebrow">preferences</div>
+    <h1><em>Settings</em> &amp; data.</h1>
+    <p class="lede">Everything lives in your browser. Tune the look, add an optional coach key, and back up or reset your data any time.</p>
+  </section>
+
+  <div class="grid2">
+    <div class="col">
+      <section class="card reveal">
+        <div class="ch"><h2>Appearance</h2></div>
+        <div class="setrow"><div><div class="si">Theme</div><div class="sd">Dark or light.</div></div><button class="toggle" id="themeToggle"></button></div>
+        <div class="setrow"><div><div class="si">Accent</div><div class="sd">Recolors the interface and the pulse wave.</div></div><div class="accents" id="accents2"></div></div>
+      </section>
+      <section class="card reveal">
+        <div class="ch"><h2>AI coach</h2></div>
+        <div style="padding:16px 24px">
+          <div class="sd" id="keyStatus" style="margin-bottom:12px"></div>
+          <div class="fld" style="margin-top:0"><input id="keyIn2" type="password" placeholder="AIza…"></div>
+          <div style="display:flex;gap:10px;margin-top:10px"><button class="save" style="margin-top:0;width:auto;padding:11px 18px" data-press id="saveKey2">Save key</button><button class="ghost" data-press id="clearKey2">Remove</button></div>
+          <div class="sd" style="margin-top:12px">Free key from <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">Google AI Studio</a>. Stored only in this browser.</div>
+        </div>
+      </section>
+    </div>
+    <div class="col">
+      <section class="card reveal">
+        <div class="ch"><h2>Data</h2></div>
+        <div class="setrow"><div><div class="si">Export backup</div><div class="sd">All habits &amp; history as JSON.</div></div><button class="ghost" data-press id="expJson">Export</button></div>
+        <div class="setrow"><div><div class="si">Import backup</div><div class="sd">Restore from a JSON file.</div></div><button class="ghost" data-press id="impJson">Import</button></div>
+        <div class="setrow"><div><div class="si">Export CSV</div><div class="sd">Every check-in as a spreadsheet.</div></div><button class="ghost" data-press id="expCsv">Export</button></div>
+        <div class="setrow"><div><div class="si">Copy progress card</div><div class="sd">A shareable text summary of today.</div></div><button class="ghost" data-press id="shareC">Copy</button></div>
+        <div class="setrow"><div><div class="si" style="color:var(--rose)">Reset everything</div><div class="sd">Erase all habits and data.</div></div><button class="ghost" data-press id="resetB" style="border-color:var(--rose);color:var(--rose)">Reset</button></div>
+        <input type="file" id="impFile" accept="application/json" style="display:none">
+      </section>
+      <section class="card reveal">
+        <div class="ch"><h2>Keyboard</h2></div>
+        <div class="setrow"><div class="si">New habit</div><span class="k">N</span></div>
+        <div class="setrow"><div class="si">Toggle theme</div><span class="k">T</span></div>
+        <div class="setrow"><div class="si">Close dialog</div><span class="k">Esc</span></div>
+      </section>
+    </div>
+  </div>
+
+  <section class="card reveal" style="margin-top:22px">
+    <div class="ch"><h2>About &amp; features</h2></div>
+    <div style="padding:18px 24px">
+      <p style="color:var(--ink2);line-height:1.6;margin-bottom:12px">Pulse is a fully client-side habit tracker. No account, no server, no tracking. An optional Gemini key adds a personalised coach; everything else works offline.</p>
+      <div class="feat" id="featlist" style="text-align:left;margin:0"></div>
+    </div>
+  </section>
+</div></main>
+<script src="pulse.js"></script>
+<script>
+function syncKey(){$('keyStatus').innerHTML=hasKey()?'Status: <b style="color:var(--grn)">key active</b> — personalised coach enabled.':'Status: <b style="color:var(--mut)">no key</b> — the offline coach still works.';$('keyIn2').value=localStorage.getItem(KEY)||'';}
+window.initPage=function(){
+  $('themeToggle').classList.toggle('on',S.settings.theme==='light');
+  $('themeToggle').onclick=()=>{toggleTheme();$('themeToggle').classList.toggle('on',S.settings.theme==='light');};
+  $('accents2').innerHTML=ACCS.map(([a,b])=>'<button class="ad'+(a===S.settings.accent?' on':'')+'" data-a="'+a+'" data-press style="width:24px;height:24px;background:linear-gradient(135deg,'+a+','+b+')"></button>').join('');
+  $('accents2').querySelectorAll('.ad').forEach(btn=>btn.onclick=()=>setAccent(btn.dataset.a,ACCS.find(x=>x[0]===btn.dataset.a)[1]));
+  syncKey();
+  $('saveKey2').onclick=()=>{const k=$('keyIn2').value.trim();if(k){localStorage.setItem(KEY,k);toast('Key saved');}syncKey();};
+  $('clearKey2').onclick=()=>{localStorage.removeItem(KEY);toast('Key removed');syncKey();};
+  $('expJson').onclick=exportJSON;$('expCsv').onclick=exportCSV;$('shareC').onclick=shareCard;
+  $('impJson').onclick=()=>$('impFile').click();$('impFile').onchange=e=>{if(e.target.files[0])importJSON(e.target.files[0]);};
+  $('resetB').onclick=resetAll;
+  $('featlist').textContent='build habits · quit habits · quantity goals · custom units · daily schedule · X-per-week schedule · pick-days schedule · one-tap check · quantity stepper · progress ring · backfill any day · rest/skip days · per-habit color · per-habit SVG icon · tags · reminder time · notes · current streak · best streak · 7-day rate · 30-day rate · all-time rate · weekly goal tracking · at-risk alerts · perfect-day detection · year heatmap · 8-week chart · best-weekday insight · per-habit consistency bars · totals · XP · levels · level progress · 8 achievements · locked/earned states · per-day notes · mood logging · recent notes · offline coach · Gemini coach · create · edit · duplicate · archive · delete · search · sort · filter · JSON backup · JSON restore · CSV export · progress-card copy · reset · multi-page nav · light & dark · 5 accents · custom cursor · pulse-wave motion · scroll reveals · shortcuts · autosave · offline · responsive.';
+};
+</script>
+</body></html>

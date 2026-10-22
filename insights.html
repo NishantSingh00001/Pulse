@@ -1,0 +1,74 @@
+<!doctype html><html lang="en" data-theme="dark"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Pulse — Insights</title>
+<meta name="description" content="Your consistency at a glance: year heatmap, completion rates, best weekdays and per-habit trends.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="pulse.css">
+</head><body>
+<div id="topbar"></div>
+<main class="shell"><div class="page">
+  <section class="phead">
+    <div class="eyebrow">your consistency</div>
+    <h1>The <em>bigger picture</em>.</h1>
+    <p class="lede">How your habits are really going — completion rates, your most consistent day, and a heatmap of every check-in.</p>
+  </section>
+
+  <section class="bigstats" id="insStats"></section>
+
+  <div class="grid2">
+    <div class="col">
+      <section class="card reveal">
+        <div class="ch"><h2>Consistency by habit</h2><span class="k">30-day rate</span></div>
+        <div style="padding:18px"><div class="ibars" id="rates"></div></div>
+      </section>
+      <section class="card reveal" id="heatCard">
+        <div class="ch"><h2>Heatmaps</h2><span class="k">last 20 weeks</span></div>
+        <div style="padding:18px"><div id="heatWrap"></div></div>
+      </section>
+    </div>
+    <div class="col">
+      <section class="card reveal">
+        <div class="ch"><h2>This week</h2><span class="k">check-ins/day</span></div>
+        <div style="padding:20px"><div class="wk" id="weekBars"></div><div class="wkl" id="weekLbls"></div></div>
+      </section>
+      <section class="card reveal">
+        <div class="ch"><h2>Best days</h2></div>
+        <div style="padding:18px"><div class="ibars" id="bestDays"></div></div>
+      </section>
+    </div>
+  </div>
+</div></main>
+<script src="pulse.js"></script>
+<script>
+function render(){
+  const hs=activeHabits();const totalCheck=S.habits.reduce((a,h)=>a+Object.keys(h.log).length,0);
+  const avg7=hs.length?Math.round(hs.reduce((a,h)=>a+rate(h,7),0)/hs.length):0;
+  const avg30=hs.length?Math.round(hs.reduce((a,h)=>a+rate(h,30),0)/hs.length):0;
+  const best=hs.reduce((a,h)=>bestStreak(h)>bestStreak(a)?h:a,hs[0]||null);
+  $('insStats').innerHTML=
+    '<div class="bstat"><div class="n">'+avg7+'<span class="u">%</span></div><div class="l">7-day avg</div></div>'+
+    '<div class="bstat"><div class="n">'+avg30+'<span class="u">%</span></div><div class="l">30-day avg</div></div>'+
+    '<div class="bstat"><div class="n" style="color:var(--am)">'+(best?bestStreak(best):0)+'</div><div class="l">best streak</div></div>'+
+    '<div class="bstat"><div class="n">'+totalCheck+'</div><div class="l">check-ins</div></div>';
+  const rel=$('rates');
+  rel.innerHTML=hs.length?hs.slice().sort((a,b)=>rate(b,30)-rate(a,30)).map(h=>'<div class="ibar"><div class="it"><b>'+esc(h.name)+'</b><span>'+rate(h,30)+'% · '+streak(h)+'d streak</span></div><div class="bar2"><i style="width:0;background:'+h.color+'" data-w="'+rate(h,30)+'%"></i></div></div>').join(''):'<div style="color:var(--mut)">No habits yet — <a href="habits.html">add one</a>.</div>';
+  // week bars = total check-ins per weekday across active habits last 7 days
+  const dayCounts=[];for(let i=6;i>=0;i--){const k=dk(i);let c=0;hs.forEach(h=>{if(isDone(h,k))c++;});dayCounts.push({k,c});}
+  const wmax=Math.max(1,...dayCounts.map(d=>d.c));
+  $('weekBars').innerHTML=dayCounts.map(d=>'<div class="wkb" style="height:0" data-h="'+(d.c/wmax*100)+'%"></div>').join('');
+  $('weekLbls').innerHTML=dayCounts.map(d=>'<span>'+new Date(d.k+'T12:00').toLocaleDateString(undefined,{weekday:'short'}).slice(0,2)+'</span>').join('');
+  // best weekday aggregate
+  const names=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];const agg=[0,0,0,0,0,0,0],tot=[0,0,0,0,0,0,0];
+  S.habits.forEach(h=>Object.keys(h.log).forEach(k=>{const d=dow(k);tot[d]++;if(isDone(h,k))agg[d]++;}));
+  const bmax=Math.max(1,...agg);
+  $('bestDays').innerHTML=names.map((n,i)=>'<div class="ibar"><div class="it"><b>'+n+'</b><span>'+agg[i]+' done</span></div><div class="bar2"><i style="width:0;background:'+(i%2?'var(--acc2)':'var(--acc)')+'" data-w="'+Math.round(agg[i]/bmax*100)+'%"></i></div></div>').join('');
+  // heatmaps per habit
+  const hw=$('heatWrap');
+  if(!hs.length){hw.innerHTML='<div style="color:var(--mut)">No habits yet.</div>';$('heatCard').classList.add('hidden');}
+  else{$('heatCard').classList.remove('hidden');hw.innerHTML='';hs.forEach(h=>{const block=document.createElement('div');block.style.marginBottom='18px';block.innerHTML='<div style="display:flex;align-items:center;gap:9px;margin-bottom:8px"><span style="width:26px;height:26px;border-radius:8px;display:grid;place-items:center;color:#fff;background:linear-gradient(140deg,'+h.color+','+h.color+'cc)">'+icon(h.icon||'target',15)+'</span><b style="font-family:var(--disp);font-weight:600">'+esc(h.name)+'</b></div><div class="heat"><div class="heatgrid"></div></div>';hw.appendChild(block);buildHeat(block.querySelector('.heatgrid'),h);});}
+  requestAnimationFrame(()=>{document.querySelectorAll('.ibar .bar2 i').forEach(i=>i.style.width=i.dataset.w);document.querySelectorAll('#weekBars .wkb').forEach(b=>b.style.height=b.dataset.h);});
+}
+window.onData=render;window.initPage=render;
+</script>
+</body></html>

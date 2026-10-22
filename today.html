@@ -1,0 +1,77 @@
+<!doctype html><html lang="en" data-theme="dark"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Pulse — Today</title>
+<meta name="description" content="A habit-building companion. Today's habits, streaks, XP and a smart coach — all offline in your browser.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="pulse.css">
+</head><body>
+<div id="topbar"></div>
+<main class="shell"><div class="page">
+  <section class="phead">
+    <div class="eyebrow" id="dateline">today</div>
+    <h1>Keep the <em>pulse</em>.</h1>
+    <p class="lede" id="subline">One tick at a time. Here's what's on for today.</p>
+  </section>
+
+  <section class="bigstats" id="stats"></section>
+
+  <div class="grid2">
+    <div class="col">
+      <section class="card reveal">
+        <div class="ch"><h2>Today's habits</h2><span class="k" id="todayCount"></span></div>
+        <div style="padding:18px"><div class="habits" id="todayList"></div></div>
+      </section>
+    </div>
+    <div class="col">
+      <section class="card reveal">
+        <div class="ch"><h2>Your coach</h2><span class="k">offline</span></div>
+        <div style="padding:20px"><div class="coach"><div class="coachav"></div><div class="coachtxt"><div class="m" id="coachMsg"></div><button class="coachbtn" data-press id="coachBtn"></button></div></div></div>
+      </section>
+      <section class="card reveal">
+        <div class="ch"><h2>Momentum</h2></div>
+        <div style="padding:20px"><div class="ibars" id="momentum"></div></div>
+      </section>
+    </div>
+  </div>
+  <div class="foot">Pulse · everything stays in your browser · nothing uploaded</div>
+</div></main>
+
+<div class="menupop hidden" id="cardmenu"></div>
+
+<script src="pulse.js"></script>
+<script>
+window.openCardMenu=function(e,id){e.stopPropagation();const h=S.habits.find(x=>x.id===id);const m=document.createElement('div');m.className='menupop';
+  m.innerHTML='<button data-press id="m-skip">'+icon('moon',16)+' Rest day (today)</button><button data-press id="m-edit">'+icon('edit',16)+' Edit in Habits</button>';
+  document.body.appendChild(m);const r=e.target.getBoundingClientRect();m.style.top=Math.min(r.bottom+6,innerHeight-120)+'px';m.style.left=Math.min(r.left-150,innerWidth-210)+'px';
+  m.querySelector('#m-skip').onclick=()=>{setSkip(id,dk(0));closeAll();};
+  m.querySelector('#m-edit').onclick=()=>location.href='habits.html';
+};
+addEventListener('click',e=>{if(!e.target.closest('.menu')&&!e.target.closest('.menupop'))document.querySelectorAll('.menupop').forEach(m=>m.remove());});
+function render(anim){
+  const hs=activeHabits();const today=hs.filter(h=>required(h,dk(0)));const done=today.filter(h=>isDone(h,dk(0))).length;const active=hs.filter(h=>streak(h)>0).length;const total=S.habits.reduce((a,h)=>a+Object.keys(h.log).length,0);
+  $('stats').innerHTML=
+   '<div class="bstat"><div class="n">'+done+'<span class="u">/'+today.length+'</span></div><div class="l">done today</div></div>'+
+   '<div class="bstat"><div class="n" style="color:var(--am)">'+active+'</div><div class="l">active streaks</div></div>'+
+   '<div class="bstat"><div class="n">Lv '+level()+'</div><div class="l">'+(S.xp||0)+' XP</div><div class="xpbar"><div class="f" style="width:'+levelProg()+'%"></div></div></div>'+
+   '<div class="bstat"><div class="n">'+total+'</div><div class="l">total check-ins</div></div>';
+  $('todayCount').textContent=done+' / '+today.length+' done';
+  const el=$('todayList');
+  if(!hs.length){el.innerHTML='<div class="empty">No habits yet. <a href="habits.html">Create your first</a> — start tiny.</div>';}
+  else if(!today.length){el.innerHTML='<div class="empty">Nothing scheduled today. Enjoy the rest, or <a href="habits.html">add a habit</a>.</div>';}
+  else{el.innerHTML='';today.forEach(h=>el.appendChild(habitCard(h,{anim})));}
+  $('coachMsg').textContent=offlineCoach();
+  const mo=$('momentum');const top=hs.slice().sort((a,b)=>rate(b,30)-rate(a,30)).slice(0,5);
+  mo.innerHTML=top.length?top.map(h=>'<div class="ibar"><div class="it"><b>'+esc(h.name)+'</b><span>'+rate(h,30)+'%</span></div><div class="bar2"><i style="width:0;background:'+h.color+'" data-w="'+rate(h,30)+'%"></i></div></div>').join(''):'<div style="color:var(--mut);font-size:13px">Add habits to see momentum.</div>';
+  requestAnimationFrame(()=>document.querySelectorAll('#momentum .bar2 i').forEach(i=>i.style.width=i.dataset.w));
+}
+window.onData=render;
+window.initPage=function(){
+  document.querySelector('.coachav').innerHTML=icon('bulb',22);
+  $('coachBtn').innerHTML=icon('bolt',14)+' Ask the AI coach';
+  $('coachBtn').onclick=()=>aiCoach($('coachMsg'));
+  const now=new Date();$('dateline').textContent=now.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'}).toLowerCase();
+  render();
+};
+</script>
+</body></html>

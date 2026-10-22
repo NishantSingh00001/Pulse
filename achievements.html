@@ -1,0 +1,47 @@
+<!doctype html><html lang="en" data-theme="dark"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Pulse — Achievements</title>
+<meta name="description" content="Your level, XP progress and the milestones you've earned.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="pulse.css">
+</head><body>
+<div id="topbar"></div>
+<main class="shell"><div class="page">
+  <section class="phead">
+    <div class="eyebrow">progress &amp; rewards</div>
+    <h1>Level up your <em>life</em>.</h1>
+    <p class="lede">Every check-in earns XP. Keep streaks and hit milestones to unlock achievements.</p>
+  </section>
+
+  <section class="card reveal" style="margin-bottom:22px">
+    <div class="ch"><h2>Level</h2><span class="k" id="xpk"></span></div>
+    <div style="padding:22px 24px">
+      <div style="display:flex;align-items:center;gap:18px;flex-wrap:wrap">
+        <div style="font-family:var(--disp);font-weight:700;font-size:54px;letter-spacing:-.03em;line-height:1">Lv <span id="lvl" style="color:transparent;background:linear-gradient(100deg,var(--acc),var(--acc2));-webkit-background-clip:text;background-clip:text"></span></div>
+        <div style="flex:1;min-width:200px">
+          <div class="xpbar" style="height:12px"><div class="f" id="xpf" style="width:0"></div></div>
+          <div style="font-family:var(--mono);font-size:12px;color:var(--mut);margin-top:8px" id="xptext"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card reveal">
+    <div class="ch"><h2>Achievements</h2><span class="k" id="achk"></span></div>
+    <div style="padding:20px"><div class="badges" id="badges"></div></div>
+  </section>
+</div></main>
+<script src="pulse.js"></script>
+<script>
+function render(){
+  $('lvl').textContent=level();
+  $('xpk').textContent=(S.xp||0)+' XP';
+  requestAnimationFrame(()=>{$('xpf').style.width=levelProg()+'%';});
+  const l=level();const next=l*l*60;$('xptext').textContent=levelProg()+'% to level '+(l+1)+' · '+(next-(S.xp||0))+' XP to go';
+  const earned=ACH.filter(a=>a.test()).length;$('achk').textContent=earned+' / '+ACH.length+' unlocked';
+  $('badges').innerHTML=ACH.map(a=>{const got=a.test();return '<div class="badge'+(got?'':' locked')+'"><div class="bi">'+icon(a.ic,24)+'</div><div class="bt">'+a.t+'</div><div class="bd">'+a.d+'</div></div>';}).join('');
+}
+window.onData=render;window.initPage=render;
+</script>
+</body></html>
